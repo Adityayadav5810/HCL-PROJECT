@@ -1,230 +1,192 @@
-# 🎬 Movie Recommendation System
+# 🎬 CineMatch · AI Movie Discovery & Hybrid Recommendation System
 
-A movie recommendation system built using Python and machine learning techniques to recommend movies based on their similarity and characteristics.
+A modern, production-grade movie discovery and recommendation platform built with Python, Scikit-Learn, and Streamlit. CineMatch blends **Content-Based Semantic Filtering** with **TruncatedSVD Collaborative Filtering** over a catalog of **46,625 movies** and **265,917 user profiles**.
 
-## 📌 Project Overview
+---
 
-This project aims to build a movie recommendation system that can suggest movies similar to a movie selected by the user.
+## 📌 Features
 
-The project uses movie metadata such as:
+- **🎯 Hybrid Recommender Engine**:
+  - Dynamically blends Content-Based Similarity (TF-IDF over plot, genres, director, cast, and keywords) with Collaborative Latent Factors (TruncatedSVD on MovieLens co-ratings).
+  - Interactive weight tuning slider ($0\%$ to $100\%$ Content vs. Collaborative).
+  - Side-by-side comparison matrix (Content vs. Collaborative vs. Hybrid).
+  - Clear algorithmic explanations for each recommendation (e.g. shared genres, audience co-rating patterns, plot affinity).
+  - Built-in self-exclusion guarantee and graceful cold-start fallback.
+- **🧭 Dynamic Catalog Discovery**:
+  - Filter by Genre, Release Year Range, Minimum Rating, and Sort Order (Popularity, Rating, Release Date, Vote Count).
+  - Fast pagination across 46,625 catalog titles.
+- **🔍 Instant Movie Search**:
+  - Exact, prefix, and partial keyword matching with sub-second response times.
+- **🧬 Movie DNA (User Taste Profiling)**:
+  - Explores learned user preference vectors across 265,917 real MovieLens user profiles.
+- **📑 Bookmarks & Watchlist**:
+  - Save movies to Bookmarks and Watch Later during your browsing session.
+- **📊 Model Intelligence Dashboard**:
+  - Live diagnostics covering model architecture, matrix dimensions, catalog coverage, and latent factors.
+- **🎨 Premium Cinematic UI**:
+  - Dark cinematic theme (obsidian and slate palette with electric cyan accents).
+  - Responsive movie cards with 2:3 aspect ratio posters and SVG fallback placeholders.
+  - Rich Movie Details view with backdrop artwork, runtime, vote stats, director & cast chips, and synopsis.
+- **🌐 Resilient TMDB API Integration**:
+  - Fetches live trending movies, backdrop artwork, and real-time metadata when connected.
+  - Automatically falls back to the local 46,625 catalog when offline or in restricted environments.
 
-- Movie title
-- Genres
-- Overview
-- Keywords
-- Cast
-- Crew
-- Ratings
-- Popularity
-- Vote information
+---
 
-The data is processed and transformed into a format suitable for calculating movie similarity and generating recommendations.
+## 🛠️ Architecture & Technologies
 
-## 🎯 Objectives
+- **Python 3.11+**
+- **Streamlit** — Web interface and reactive state management
+- **Scikit-Learn & Scipy** — TF-IDF vectorization, sparse matrix operations, and TruncatedSVD
+- **NumPy & Pandas** — Vectorized numerical operations and data processing
+- **Joblib** — High-performance model serialization
+- **Requests** — TMDB API v3 integration with resilient caching and fast timeout
 
-- Understand and preprocess a real-world movie dataset.
-- Learn data cleaning and manipulation using Pandas.
-- Combine information from multiple related datasets.
-- Extract useful features from movie metadata.
-- Calculate similarity between movies.
-- Build a recommendation system that returns movies similar to a selected movie.
-- Create a simple interface for users to interact with the recommendation system.
-
-## 🗂️ Dataset
-
-The project uses movie-related datasets containing information about movies, ratings, credits, keywords, and external movie IDs.
-
-The main datasets include:
-
-```text
-movies_metadata.csv
-credits.csv
-keywords.csv
-ratings.csv
-links.csv
-ratings_small.csv
-links_small.csv
-```
-
-The datasets contain information such as movie details, user ratings, cast, crew, and keywords.
-
-## 🛠️ Technologies Used
-
-- **Python**
-- **Pandas** — data loading, cleaning, manipulation and analysis
-- **NumPy** — numerical operations
-- **Scikit-learn** — machine learning and similarity calculations
-- **Jupyter Notebook / Kaggle Notebook** — development and experimentation
-
-Additional libraries may be added as the project develops.
-
-## 🔄 Project Workflow
+### Model Architecture
 
 ```text
-Raw Dataset
-     ↓
-Data Loading
-     ↓
-Data Exploration
-     ↓
-Data Cleaning
-     ↓
-Handling Missing Values
-     ↓
-Feature Extraction
-     ↓
-Dataset Merging
-     ↓
-Feature Engineering
-     ↓
-Vectorization
-     ↓
-Similarity Calculation
-     ↓
-Movie Recommendations
+                                 [ Seed Movie / User ID ]
+                                             │
+                     ┌───────────────────────┴───────────────────────┐
+                     ▼                                               ▼
+         [ Content-Based Pipeline ]                      [ Collaborative Pipeline ]
+     50,000-feature TF-IDF Sparse Matrix              50-dimensional SVD Latent Factors
+     Plot, Genres, Keywords, Cast, Director             MovieLens User-Movie Co-ratings
+                     │                                               │
+             Cosine Similarity                               Latent Factor Alignment
+                     │                                               │
+                     └───────────────────────┬───────────────────────┘
+                                             ▼
+                             [ Weighted Hybrid Interpolation ]
+                                  w_c * Content + w_cf * CF
+                                             │
+                                     [ Self-Masking ]
+                                (Exclude seed movie: -1.0)
+                                             │
+                                  [ Cold-Start Fallback ]
+                           (Pure content when CF unavailable)
+                                             │
+                                             ▼
+                               [ Top-N Ranked Recommendations ]
 ```
 
-## 🧹 Data Preprocessing
-
-The preprocessing stage includes:
-
-- Exploring the structure of the datasets.
-- Identifying missing values.
-- Checking duplicate records.
-- Handling incorrect or inconsistent data types.
-- Selecting relevant columns.
-- Combining information from different datasets.
-- Converting structured information such as genres, keywords, cast and crew into usable features.
-
-## 🧠 Recommendation Approach
-
-The primary approach is **content-based filtering**.
-
-The system represents important movie characteristics as numerical features and calculates similarity between movies.
-
-For example, if a user selects:
-
-```text
-The Dark Knight
-```
-
-the system analyzes its characteristics and searches for movies with similar features.
-
-Conceptually:
-
-```text
-                    The Dark Knight
-                           ↓
-              Movie Feature Extraction
-                           ↓
-                  Numerical Representation
-                           ↓
-                  Similarity Calculation
-                           ↓
-              ┌────────────┼────────────┐
-              ↓            ↓            ↓
-          Movie A       Movie B      Movie C
-              ↓            ↓            ↓
-                    Recommendations
-```
-
-## 📊 Example
-
-Input:
-
-```text
-The Dark Knight
-```
-
-Possible output:
-
-```text
-1. Batman Begins
-2. The Dark Knight Rises
-3. Batman: Under the Red Hood
-4. Watchmen
-5. V for Vendetta
-```
-
-The final recommendations will depend on the features and similarity method used by the completed system.
+---
 
 ## 📁 Project Structure
 
 ```text
 Movie-Recommendation-System/
 │
-├── data/
-│   └── README.md
+├── .streamlit/
+│   ├── config.toml           # Streamlit theme and server configuration
+│   ├── credentials.toml      # Headless credentials (bypasses email prompt)
+│   └── secrets.toml          # TMDB API key configuration (git-ignored)
 │
-├── notebooks/
-│   └── movie_recommendation.ipynb
+├── models/
+│   ├── movies_model.pkl      # 46,625 movie records with rich metadata
+│   ├── tfidf_matrix.pkl      # 46,625 x 50,000 sparse TF-IDF feature matrix
+│   ├── movie_factors.pkl     # 7,565 x 50 SVD item latent factor matrix
+│   ├── movie_to_idx.pkl      # TMDB ID to latent factor row mapping
+│   ├── svd_model.pkl         # Trained TruncatedSVD decomposition model
+│   ├── user_factors.pkl      # 265,917 x 50 user latent factor matrix
+│   ├── user_to_idx.pkl       # User ID to latent factor row mapping
+│   └── user_rated_movies.pkl # User historical rating sets
 │
-├── src/
-│   └── ...
+├── tests/
+│   ├── test_recommendation.py # 14 comprehensive unit & integration tests
+│   └── verify_startup.py      # Automated server startup and health check probe
 │
-├── README.md
-├── requirements.txt
-└── .gitignore
+├── app.py                    # Main Streamlit application entry point
+├── engine.py                 # Core recommendation engine and catalog queries
+├── styles.py                 # Dark cinematic CSS styling system
+├── tmdb_api.py               # TMDB API client with fast offline fallback
+├── links.csv                 # MovieLens to TMDB ID mappings
+├── requirements.txt          # Python package dependencies
+└── README.md                 # Project documentation
 ```
 
-The raw dataset is not included in the repository if its size or licensing makes redistribution impractical.
+---
 
-## 🚧 Current Status
+## 🚀 Installation & Application Startup
 
-This project is currently under development.
+### 1. Prerequisites
 
-### Completed
+Ensure **Python 3.10+** (Python 3.11 recommended) is installed on your system.
 
-- [x] Dataset obtained
-- [x] Dataset added to Kaggle
-- [x] Initial dataset loading using Pandas
-- [x] Initial dataset exploration
-- [x] Identified multiple related movie datasets
+### 2. Install Dependencies
 
-### In Progress
+Open Windows PowerShell in the project directory and install the required packages:
 
-- [ ] Data cleaning
-- [ ] Handling missing values
-- [ ] Exploring relationships between datasets
-- [ ] Combining relevant datasets
-- [ ] Feature engineering
-- [ ] Text preprocessing
-- [ ] Feature vectorization
-- [ ] Similarity calculation
-- [ ] Recommendation engine
-- [ ] User interface
-- [ ] Final testing
+```powershell
+pip install -r requirements.txt
+```
 
-## 📚 What I Am Learning Through This Project
+### 3. Configure TMDB API Key (Optional)
 
-This project is also being used as a practical learning project for:
+The application runs completely offline using the bundled 46,625 movie catalog. To enable live trending titles and backdrop images from TMDB:
 
-- Python
-- Pandas
-- NumPy
-- Data cleaning
-- Exploratory Data Analysis
-- Feature engineering
-- Machine learning fundamentals
-- Natural language processing basics
-- Vectorization
-- Similarity algorithms
-- Recommendation systems
+1. Create or edit `.streamlit/secrets.toml`:
+   ```toml
+   TMDB_API_KEY = "your_tmdb_api_key_here"
+   ```
+2. Or set an environment variable:
+   ```powershell
+   $env:TMDB_API_KEY = "your_tmdb_api_key_here"
+   ```
+3. Or enter your key directly inside the app's **⚙️ Settings** page.
 
-## 🔮 Future Improvements
+### 4. Launch the Application
 
-Possible future improvements include:
+Run the application using the Streamlit CLI:
 
-- Hybrid recommendation using both content-based and collaborative filtering.
-- Personalized recommendations based on user ratings.
-- Better handling of movie genres, keywords, cast and crew.
-- Improved similarity metrics.
-- Recommendation explanations.
-- Web-based user interface.
-- Deployment as an online application.
+```powershell
+# From inside the Movie-Recommendation-System directory:
+python -m streamlit run app.py
 
-## 👨‍💻 Author
+# Or from the parent directory:
+python -m streamlit run Movie-Recommendation-System/app.py
+```
 
-**Aditya Yadav**
+Once started, open your web browser at:
+👉 **`http://localhost:8501`**
 
-GitHub: [adithor001-byte](https://github.com/adithor001-byte)
+---
+
+## 🧪 Running Automated Tests
+
+To run the unit and integration test suite:
+
+```powershell
+python -m unittest tests/test_recommendation.py
+```
+
+To run the automated server startup and HTTP health verification:
+
+```powershell
+python tests/verify_startup.py
+```
+
+Expected output:
+```text
+Ran 14 tests in ~12s
+OK
+SUCCESS: Streamlit health endpoint responded 200 OK!
+Startup verification result: PASSED
+```
+
+---
+
+## ⚡ Performance Optimizations
+
+1. **Vectorized Matrix Computations**: Replaced slow item-by-item Python loops with vectorized NumPy and Scipy operations, dropping recommendation latency to **under 80ms**.
+2. **On-Demand Lazy Loading**: Large user matrices (95MB) are loaded on-demand only when accessing the Movie DNA tab, reducing initial startup time from **25s down to ~5.8s**.
+3. **Resilient Network Timeouts**: Fast 1.0s connectivity check prevents the application from hanging when offline or sandboxed.
+4. **Data Type Hygiene**: Fixed string popularity sorting and array ambiguity errors when parsing genres and cast lists.
+
+---
+
+## 📋 Known Limitations
+
+- **Historical Dataset Range**: The bundled catalog metadata includes films up to 2017. For 2018–2026 releases, active TMDB API connectivity is utilized.
+- **Collaborative Factor Subset**: The TruncatedSVD item factors cover the 7,565 most-rated catalog titles to preserve model quality. Titles outside this subset automatically use 50,000-feature TF-IDF content similarity.
+- **Session-Based Storage**: Bookmarks and Watchlists are stored in Streamlit `session_state` per browser session.
