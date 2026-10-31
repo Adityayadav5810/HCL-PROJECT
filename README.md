@@ -1,3 +1,4 @@
+
 # 🎬 CineMatch · AI Movie Discovery & Hybrid Recommendation System
 
 A modern, production-grade movie discovery and recommendation platform built with Python, Scikit-Learn, and Streamlit. CineMatch blends **Content-Based Semantic Filtering** with **TruncatedSVD Collaborative Filtering** over a catalog of **46,625 movies** and **265,917 user profiles**.
@@ -190,4 +191,5 @@ Startup verification result: PASSED
 - **Historical Dataset Range**: The bundled catalog metadata includes films up to 2017. For 2018–2026 releases, active TMDB API connectivity is utilized.
 - **Collaborative Factor Subset**: The TruncatedSVD item factors cover the 7,565 most-rated catalog titles to preserve model quality. Titles outside this subset automatically use 50,000-feature TF-IDF content similarity.
 - **Session-Based Storage**: Bookmarks and Watchlists are stored in Streamlit `session_state` per browser session.
+
 
